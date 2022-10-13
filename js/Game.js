@@ -6,6 +6,8 @@ class Game {
     this.jogador1 = createElement("h2")
     this.jogador2 = createElement("h2")
     this.playerMove = false;
+    this.leftActive = false;
+    this.explodido = false;
   }
 
   lerEstado(){
@@ -53,10 +55,12 @@ class Game {
     //criando os carros do jogo
     carro1 = createSprite(width/2 - 50, height - 100);
     carro1.addImage("carro1", carroIMG1);
+    carro1.addImage("blast", blastIMG);
     carro1.scale = 0.07;
 
     carro2 = createSprite(width/2 + 100, height - 100);
     carro2.addImage("carro2", carroIMG2);
+    carro2.addImage("blast", blastIMG);
     carro2.scale = 0.07;
 
     carros = [carro1, carro2]
@@ -140,6 +144,14 @@ class Game {
         var x = allPlayers[plr].positionX;
         var y = height - allPlayers[plr].positionY;
 
+        //criando uma variavel de vida temporaria e alterando imagem do carro
+        var temporariaLife = allPlayers[plr].life;
+
+        if(temporariaLife <= 0){
+          carros[index - 1].changeImage("blast");
+          carros[index - 1].scale = 0.3;
+        }
+
         carros[index - 1].position.x = x;
         carros[index - 1].position.y = y;
 
@@ -150,7 +162,13 @@ class Game {
 
           this.pegarGasolina(index);
           this.pegarMoeda(index);
+          this.colisaoDeObstaculos(index);
+          this.colisionCars(index);
 
+          if(player.life <= 0){
+            this.explodido = true;
+            this.playerMove = false;
+          }
           //posiçao da camera na direção y do carro
           camera.position.y = carros[index - 1].position.y;
 
@@ -182,20 +200,25 @@ class Game {
   }
 
   playerControl(){
-    if(keyIsDown(UP_ARROW)){
-      player.positionY = player.positionY +10;
-      player.update();
-      this.playerMove = true;
-    }
+    if(this.explodido === false){
 
-    if(keyIsDown(LEFT_ARROW) && player.positionX > width/2 - 300){
-      player.positionX = player.positionX -5;
-      player.update();
-    }
+      if(keyIsDown(UP_ARROW)){
+        player.positionY = player.positionY +10;
+        player.update();
+        this.playerMove = true;
+      }
 
-    if(keyIsDown(RIGHT_ARROW) && player.positionX < width/2 + 300){
-      player.positionX = player.positionX +5;
-      player.update();
+      if(keyIsDown(LEFT_ARROW) && player.positionX > width/2 - 300){
+        player.positionX = player.positionX -5;
+        player.update();
+        this.leftActive = true;
+      }
+
+      if(keyIsDown(RIGHT_ARROW) && player.positionX < width/2 + 300){
+        player.positionX = player.positionX +5;
+        player.update();
+        this.leftActive = false;
+      }
     }
   }
 
@@ -257,6 +280,54 @@ class Game {
     })
   }
 
+  colisaoDeObstaculos(index){
+    if(carros[index -1].collide(obstacles)){
+
+      if(this.leftActive === true){
+        player.positionX = player.positionX +100;
+      }else{
+        player.positionX = player.positionX -100;
+      }
+
+      if(player.life > 0){
+        player.life = player.life -(185/4);
+      }
+      player.update();
+    }
+  }
+
+  colisionCars(index){
+    if(index === 1){
+      if(carros[index -1].collide(carros[1])){
+        if(this.leftActive === true){
+          player.positionX = player.positionX +100;
+        }else{
+          player.positionX = player.positionX -100;
+        }
+  
+        if(player.life > 0){
+          player.life = player.life -(185/4);
+        }
+        player.update();
+      }
+    }
+
+    if(index === 2){
+      if(carros[index -1].collide(carros[0])){
+        if(this.leftActive === true){
+          player.positionX = player.positionX +100;
+        }else{
+          player.positionX = player.positionX -100;
+        }
+  
+        if(player.life > 0){
+          player.life = player.life -(185/4);
+        }
+        player.update();
+      }
+    }
+  }
+
   mostrarVida(){
     push();
     image(lifeIMG, width/2 - 130, height - player.positionY - 400, 20, 20);
@@ -297,5 +368,9 @@ class Game {
       imageSize: "100x100",
       confirmButtonText: "obrigado por jogar"
     })
+  }
+
+  end(){
+    console.log("fim de jogo");
   }
 }

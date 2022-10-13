@@ -10,6 +10,7 @@ var allPlayers;
 var fuelIMG, fuels, coinIMG, coins;
 var obstacle1IMG, obstacle2IMG, obstacles;
 var lifeIMG;
+var blastIMG;
 
 function preload() {
   bgIMG = loadImage("assets/planodefundo.png");
@@ -27,6 +28,8 @@ function preload() {
   obstacle2IMG = loadImage("assets/obstacle2.png");
 
   lifeIMG = loadImage("assets/life.png");
+
+  blastIMG = loadImage("assets/blast.png");
 }
 
 function setup() {
@@ -46,6 +49,10 @@ function draw() {
   }
   if(gameState == 1){
     game.play();
+  }
+  if(gameState === 2){
+    game.mostrarPlacar();
+    game.end();
   }
 }
 
